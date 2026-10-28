@@ -1,105 +1,105 @@
-# Synchronisation locale vers SharePoint avec Microsoft Graph
+# Local to SharePoint Synchronization with Microsoft Graph
 
-Ce script Python synchronise récursivement le contenu d’un répertoire local vers une bibliothèque de documents SharePoint en utilisant Microsoft Graph et une authentification applicative Microsoft Entra ID.
+This Python script recursively synchronizes the contents of a local directory to a SharePoint document library using Microsoft Graph and Microsoft Entra ID application authentication.
 
-Le script permet également de récupérer et d’afficher les `Drive ID` des bibliothèques de documents disponibles sur le site SharePoint.
+It can also retrieve and display the `Drive ID` values of the document libraries available on the SharePoint site.
 
-## Fonctionnalités
+## Features
 
-- Authentification auprès de Microsoft Entra ID avec `CLIENT_ID`, `CLIENT_SECRET` et `TENANT_ID`.
-- Récupération automatique du `Site ID` SharePoint.
-- Affichage de toutes les bibliothèques SharePoint du site avec :
-  - le nom de la bibliothèque ;
-  - le `Drive ID` ;
-  - le type de lecteur ;
-  - l’URL web.
-- Création automatique des dossiers SharePoint manquants.
-- Parcours récursif du répertoire local.
-- Téléversement des fichiers dans SharePoint en conservant l’arborescence locale.
-- Journalisation dans un fichier horodaté et dans la console.
-- Fonction disponible pour supprimer le contenu d’un dossier SharePoint.
+- Authentication to Microsoft Entra ID using `CLIENT_ID`, `CLIENT_SECRET`, and `TENANT_ID`.
+- Automatic retrieval of the SharePoint `Site ID`.
+- Lists SharePoint document libraries with:
+  - library name;
+  - `Drive ID`;
+  - drive type;
+  - web URL.
+- Automatically creates missing SharePoint folders.
+- Recursively scans the local directory.
+- Uploads files while preserving the local folder structure.
+- Logs activity to both a timestamped log file and the console.
+- Includes a function for deleting the contents of a SharePoint folder.
 
-## Prérequis
+## Requirements
 
-- Python 3.9 ou supérieur recommandé.
-- Une application enregistrée dans Microsoft Entra ID.
-- Un secret client valide.
-- Des permissions Microsoft Graph adaptées au mode applicatif.
-- Un accès réseau aux services Microsoft Entra ID et Microsoft Graph.
+- Python 3.9 or later recommended.
+- A registered Microsoft Entra ID application.
+- A valid client secret.
+- Appropriate Microsoft Graph application permissions.
+- Network access to Microsoft Entra ID and Microsoft Graph.
 
 ## Installation
 
-Créer un environnement virtuel :
+Create a virtual environment:
 
 ```bash
 python -m venv .venv
 ```
 
-Sous Windows PowerShell :
+On Windows PowerShell:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 ```
 
-Installer les dépendances :
+Install the dependencies:
 
 ```bash
 pip install requests msal
 ```
 
-Une alternative consiste à créer un fichier `requirements.txt` :
+Alternatively, create a `requirements.txt` file:
 
 ```text
 msal
 requests
 ```
 
-Puis à exécuter :
+Then run:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Configuration Microsoft Entra ID
+## Microsoft Entra ID Configuration
 
-L’application doit être enregistrée dans Microsoft Entra ID et disposer de permissions Microsoft Graph applicatives permettant d’accéder aux sites et aux fichiers SharePoint concernés.
+The application must be registered in Microsoft Entra ID and have Microsoft Graph application permissions that allow access to the required SharePoint sites and files.
 
-Selon la politique de sécurité et le périmètre attendu, les permissions sont généralement accordées à l’application, puis validées par un administrateur. Pour limiter l’accès à certains sites uniquement, privilégier un modèle d’autorisation restreint plutôt qu’un accès global à tous les sites.
+Use the minimum permissions required by your environment. If access should be restricted to specific SharePoint sites, prefer a restricted site access model rather than tenant-wide access.
 
-## Configuration du script
+## Script Configuration
 
-Modifier les constantes au début du script :
+Update the constants at the beginning of the script:
 
 ```python
-CLIENT_ID = 'VOTRE_CLIENT_ID'
-CLIENT_SECRET = 'VOTRE_CLIENT_SECRET'
-TENANT_ID = 'VOTRE_TENANT_ID'
+CLIENT_ID = 'YOUR_CLIENT_ID'
+CLIENT_SECRET = 'YOUR_CLIENT_SECRET'
+TENANT_ID = 'YOUR_TENANT_ID'
 
 AUTHORITY = f'https://login.microsoftonline.com/{TENANT_ID}'
 
 SHAREPOINT_SITE_URL = (
     'https://graph.microsoft.com/v1.0/sites/'
-    'votre-domaine-sharepoint:/sites/nom-du-site'
+    'your-sharepoint-hostname:/sites/your-site-name'
 )
 
 LOCAL_DIRECTORY = 'E:/workspace/EXTRACT/opt'
 SHAREPOINT_BASE_FOLDER = '/data_tree'
 ```
 
-### Signification des paramètres
+### Parameters
 
-- `CLIENT_ID` : identifiant de l’application Microsoft Entra ID.
-- `CLIENT_SECRET` : secret associé à l’application.
-- `TENANT_ID` : identifiant du tenant Microsoft Entra ID.
-- `SHAREPOINT_SITE_URL` : endpoint Microsoft Graph utilisé pour récupérer le site SharePoint.
-- `LOCAL_DIRECTORY` : répertoire local à synchroniser.
-- `SHAREPOINT_BASE_FOLDER` : dossier de destination dans la bibliothèque SharePoint par défaut.
+- `CLIENT_ID`: Microsoft Entra ID application/client ID.
+- `CLIENT_SECRET`: application client secret.
+- `TENANT_ID`: Microsoft Entra ID tenant ID.
+- `SHAREPOINT_SITE_URL`: Microsoft Graph endpoint used to retrieve the SharePoint site.
+- `LOCAL_DIRECTORY`: local directory to synchronize.
+- `SHAREPOINT_BASE_FOLDER`: destination folder in the default SharePoint document library.
 
-## Sécurité des identifiants
+## Credentials Security
 
-Ne pas conserver un véritable `CLIENT_SECRET` directement dans le code source ou dans Git.
+Do not store a real `CLIENT_SECRET` directly in source code or commit it to Git.
 
-Il est préférable d’utiliser des variables d’environnement :
+Environment variables are preferable:
 
 ```python
 CLIENT_ID = os.environ['SP_CLIENT_ID']
@@ -107,16 +107,16 @@ CLIENT_SECRET = os.environ['SP_CLIENT_SECRET']
 TENANT_ID = os.environ['SP_TENANT_ID']
 ```
 
-Exemple sous PowerShell :
+Example with PowerShell:
 
 ```powershell
-$env:SP_CLIENT_ID = "votre-client-id"
-$env:SP_CLIENT_SECRET = "votre-secret"
-$env:SP_TENANT_ID = "votre-tenant-id"
+$env:SP_CLIENT_ID = "your-client-id"
+$env:SP_CLIENT_SECRET = "your-client-secret"
+$env:SP_TENANT_ID = "your-tenant-id"
 python .\sharepoint_sync.py
 ```
 
-Ajouter également les fichiers sensibles et les journaux au `.gitignore` :
+A `.gitignore` should also exclude sensitive files and logs:
 
 ```gitignore
 .venv/
@@ -126,30 +126,38 @@ __pycache__/
 logs/
 ```
 
-## Exécution
+## Running the Script
 
-Enregistrer le script, par exemple sous le nom :
+Save the Python script, for example as:
 
 ```text
 sharepoint_sync.py
 ```
 
-Puis lancer :
+Run it with:
 
 ```bash
 python sharepoint_sync.py
 ```
 
-Le programme réalise les opérations suivantes :
+The script then:
 
-1. création du fichier de journalisation ;
-2. obtention d’un jeton Microsoft Graph ;
-3. récupération du `Site ID` ;
-4. récupération et affichage des bibliothèques et de leurs `Drive ID` ;
-5. création éventuelle de `/data_tree` et de ses sous-dossiers ;
-6. téléversement des fichiers du répertoire local.
+1. initializes logging;
+2. obtains a Microsoft Graph access token;
+3. retrieves the SharePoint `Site ID`;
+4. retrieves and displays available document libraries and their `Drive ID` values;
+5. creates `/data_tree` and its subfolders when necessary;
+6. uploads files from the local directory.
 
-## Exemple d’affichage des Drive ID
+## Drive ID Output
+
+`list_drive_ids()` requests:
+
+```text
+GET /sites/{site_id}/drives
+```
+
+Example console output:
 
 ```text
 ================================================================================
@@ -164,25 +172,25 @@ Web URL  : https://tenant.sharepoint.com/sites/site/Documents
 ================================================================================
 ```
 
-La valeur à saisir dans un champ `Drive ID` est la valeur complète affichée après `Drive ID`, généralement sous une forme commençant par `b!`.
+The value required for a `Drive ID` field is the complete value displayed after `Drive ID`, often beginning with `b!`.
 
-## Bibliothèque SharePoint utilisée par le script
+## SharePoint Library Used by the Script
 
-Les appels du script utilisent actuellement cette forme :
+The synchronization functions currently use Microsoft Graph endpoints in this form:
 
 ```text
 /sites/{site_id}/drive/root:...
 ```
 
-Cela cible la bibliothèque de documents par défaut du site SharePoint.
+This means the script targets the site's default document library.
 
-Si la destination se trouve dans une autre bibliothèque, il faut sélectionner son `Drive ID`, puis remplacer les endpoints concernés par :
+If the required destination is stored in another document library, use its `Drive ID` and change the relevant endpoints to:
 
 ```text
 /drives/{drive_id}/root:...
 ```
 
-Exemple :
+For example:
 
 ```python
 check_url = (
@@ -191,156 +199,186 @@ check_url = (
 )
 ```
 
-Dans ce cas, les fonctions de synchronisation doivent recevoir `drive_id` en paramètre à la place de dépendre de la bibliothèque par défaut.
+In that design, the synchronization functions should receive `drive_id` as an argument instead of implicitly using the default library.
 
-## Arborescence créée
+## Folder Structure
 
-Avec cette configuration :
+With:
 
 ```python
 LOCAL_DIRECTORY = 'E:/workspace/EXTRACT/opt'
 SHAREPOINT_BASE_FOLDER = '/data_tree'
 ```
 
-Un fichier local comme :
+A local file such as:
 
 ```text
 E:/workspace/EXTRACT/opt/site1/config/settings.json
 ```
 
-sera envoyé vers :
+is uploaded to:
 
 ```text
 /data_tree/site1/config/settings.json
 ```
 
-## Journaux
+The relative directory structure below `LOCAL_DIRECTORY` is therefore preserved under `SHAREPOINT_BASE_FOLDER`.
 
-Les journaux sont créés dans :
+## Logging
+
+Logs are written to:
 
 ```text
 logs/synchro/
 ```
 
-Le nom du fichier suit ce format :
+Each execution generates a timestamped file using this naming format:
 
 ```text
 sharepoint_sync_YYYYMMDD_HHMMSS.log
 ```
 
-Les mêmes informations sont aussi affichées dans la console.
+The same log messages are also written to the console.
 
-## Suppression du contenu distant
+## Main Functions
 
-La fonction suivante est présente dans le script :
+### `setup_logging()`
 
-```python
-delete_folder_contents(access_token, site_id, folder_path)
-```
+Creates the log directory, configures file and console handlers, and returns the application's logger.
 
-Elle supprime les éléments directement présents dans le dossier indiqué. Malgré le commentaire du code, l’implémentation actuelle ne parcourt pas elle-même chaque sous-dossier avant suppression. Microsoft Graph peut supprimer un dossier avec son contenu lorsque l’élément dossier est supprimé, mais il est recommandé de tester ce comportement dans un environnement non productif avant utilisation.
+### `get_access_token()`
 
-La fonction n’est pas appelée dans le programme principal. La synchronisation actuelle ajoute ou remplace les fichiers portant le même nom, mais ne supprime pas automatiquement les fichiers distants absents du répertoire local.
+Uses `msal.ConfidentialClientApplication` and the Microsoft Graph `.default` scope to request an application access token.
 
-## Limites importantes
+### `get_site_id(access_token)`
 
-### Taille des fichiers
+Calls `SHAREPOINT_SITE_URL` and returns the SharePoint site identifier from the response.
 
-Le script utilise un envoi simple avec :
+### `list_drive_ids(access_token, site_id)`
+
+Retrieves the site's document libraries and prints their name, `Drive ID`, drive type, and web URL.
+
+### `ensure_folder_exists(access_token, site_id, folder_path)`
+
+Checks whether the requested folder exists. Missing parent and target folders are created recursively.
+
+### `upload_file(access_token, site_id, sharepoint_folder_path, local_file_path)`
+
+Uploads one local file to the requested SharePoint folder.
+
+### `sync_local_to_sharepoint(access_token, site_id, local_directory, sharepoint_folder)`
+
+Walks through `local_directory`, recreates the folder hierarchy in SharePoint, and uploads each file.
+
+### `delete_folder_contents(access_token, site_id, folder_path)`
+
+Deletes the items returned from the specified SharePoint folder. This function is present in the script but is not called by the current main program.
+
+## Current Synchronization Behavior
+
+The current implementation should be considered an upload synchronization rather than a strict mirror:
+
+- local directories are created remotely when required;
+- local files are uploaded to the corresponding SharePoint path;
+- existing remote files with the same destination may be overwritten by the upload operation;
+- remote files that no longer exist locally are not automatically removed by the main synchronization flow.
+
+## Important Limitations
+
+### Large Files
+
+The script currently uploads files using a simple Microsoft Graph content upload:
 
 ```http
 PUT /content
 ```
 
-Pour des fichiers volumineux, une session d’upload Microsoft Graph est préférable afin d’envoyer le fichier en plusieurs fragments et de reprendre un transfert interrompu.
+For large files, an upload-session implementation is more robust because it can transfer the file in chunks and support resumable uploads.
 
 ### Pagination
 
-La fonction `list_drive_ids()` lit uniquement la première page retournée par Microsoft Graph. Si la réponse contient `@odata.nextLink`, il faut suivre cette URL pour obtenir les pages suivantes.
+`list_drive_ids()` currently processes the first response page. If Microsoft Graph returns an `@odata.nextLink`, the implementation would need to follow that link to process additional pages.
 
-La même remarque s’applique à la liste des éléments d’un dossier si cette fonction est étendue à de gros volumes.
+The same consideration applies when listing large collections of SharePoint items.
 
-### Encodage des noms
+### File Name Encoding
 
-Les chemins de dossiers sont encodés avec `urllib.parse.quote`. Pour les noms de fichiers contenant des espaces, `#`, `%` ou d’autres caractères réservés, il est plus robuste d’encoder également chaque nom de fichier avant de construire l’URL d’upload.
+Folder paths are encoded with `urllib.parse.quote`. File names containing reserved URL characters such as spaces, `#`, or `%` should also be encoded safely when building upload URLs.
 
-### Écrasement et suppression
+### Error Handling and Retries
 
-- Un fichier portant le même chemin peut être remplacé lors du téléversement.
-- Les fichiers présents dans SharePoint mais absents localement ne sont pas supprimés.
-- Il ne s’agit donc pas d’une synchronisation miroir complète.
+The current script logs HTTP errors but does not implement a general retry strategy for transient Microsoft Graph errors or throttling responses.
 
-## Erreur fréquente dans un copier-coller HTML
+## HTML Copy/Paste Issue
 
-Dans le code Python, vérifier que la comparaison suivante contient bien le caractère `>` :
+Make sure the Python source contains the real `>` operator here:
 
 ```python
 if len(path_parts) > 1:
 ```
 
-Si le fichier contient littéralement `&gt;`, Python générera une erreur de syntaxe. Cette séquence provient généralement d’un copier-coller depuis une page HTML.
+If the Python file literally contains `&gt;`, it must be replaced with `>` or Python will report a syntax error. This can happen when code is copied through an HTML-formatted interface.
 
-## Dépannage
+## Troubleshooting
 
-### Erreur 401
+### HTTP 401
 
-Vérifier :
+Check:
 
-- le `CLIENT_ID` ;
-- le `CLIENT_SECRET` ;
-- le `TENANT_ID` ;
-- l’expiration du secret ;
-- l’obtention effective du jeton.
+- `CLIENT_ID`;
+- `CLIENT_SECRET`;
+- `TENANT_ID`;
+- whether the client secret is still valid;
+- whether an access token is successfully returned.
 
-### Erreur 403
+### HTTP 403
 
-Vérifier :
+Check:
 
-- les permissions Microsoft Graph de l’application ;
-- le consentement administrateur ;
-- l’autorisation de l’application sur le site SharePoint ciblé si l’accès est restreint.
+- Microsoft Graph application permissions;
+- administrator consent;
+- site-specific authorization if the application is intentionally restricted to selected SharePoint sites.
 
-### Erreur 404 sur le site
+### HTTP 404 When Retrieving the Site
 
-Vérifier la construction de `SHAREPOINT_SITE_URL`, notamment :
+Verify the structure of `SHAREPOINT_SITE_URL`, for example:
 
 ```text
 https://graph.microsoft.com/v1.0/sites/{hostname}:/sites/{site-name}
 ```
 
-### Erreur 404 sur un dossier
+### HTTP 404 for a Folder
 
-Vérifier :
+Check:
 
-- que le dossier appartient bien à la bibliothèque par défaut ;
-- la valeur de `SHAREPOINT_BASE_FOLDER` ;
-- l’encodage du chemin ;
-- le `Drive ID` si le dossier se trouve dans une autre bibliothèque.
+- whether the folder is in the default document library;
+- `SHAREPOINT_BASE_FOLDER`;
+- the generated folder path;
+- the `Drive ID` if the target folder is stored in another document library.
 
-### Aucun Drive ID affiché
+### No Drive IDs Are Displayed
 
-Vérifier que l’application peut appeler :
+Check that the application can successfully request:
 
 ```text
 GET /sites/{site_id}/drives
 ```
 
-et qu’au moins une bibliothèque de documents est accessible sur le site.
+and that the site exposes document libraries accessible to the application.
 
-## Recommandations de production
+## Production Recommendations
 
-Avant une utilisation en production :
+Before using the script in production:
 
-- déplacer les secrets vers des variables d’environnement ou un coffre de secrets ;
-- ajouter un délai maximal aux requêtes `requests` ;
-- utiliser `response.raise_for_status()` ou une gestion homogène des erreurs ;
-- ajouter des tentatives automatiques pour les erreurs temporaires et les réponses `429` ;
-- implémenter les sessions d’upload pour les gros fichiers ;
-- gérer la pagination Microsoft Graph ;
-- encoder les noms de fichiers dans les URLs ;
-- tester les suppressions dans un site non productif ;
-- limiter les permissions de l’application au strict nécessaire.
+- move credentials to environment variables or a secret-management solution;
+- add explicit timeouts to `requests` calls;
+- add retry handling for transient failures and throttling;
+- implement upload sessions for large files;
+- handle Microsoft Graph pagination;
+- safely encode file names used in URLs;
+- test deletion behavior in a non-production SharePoint site;
+- grant only the Microsoft Graph permissions required by the application.
 
-## Licence
+## License
 
-Projet interne. Adapter la section de licence aux règles de votre organisation.
+Internal project. Update this section according to your organization's licensing requirements.
